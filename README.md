@@ -48,7 +48,7 @@ question ──► retriever (dense / BM25 / hybrid) ──► reranker ──�
 
 ## Tech stack
 
-Python, sentence-transformers, FAISS, BM25 (built in, Lucene IDF), the Claude API (optional, `claude-opus-5-5`), a custom judge, MLflow (optional) for experiment tracking, FastAPI for the API, and a **TypeScript web interface** (Vite + React). A minimal Streamlit demo is included too.
+Python, sentence-transformers, FAISS, BM25 (built in, Lucene IDF), the Claude API (optional, `claude-opus-5-5`), a custom judge, MLflow (optional) for experiment tracking, FastAPI for the API, and a **TypeScript web interface** (Vite, React, Tailwind CSS, shadcn/ui, Recharts). A minimal Streamlit demo is included too.
 
 ## Project structure
 
@@ -130,21 +130,39 @@ For frontend development with hot reload, run `npm run dev` in `web/` (http://lo
 
 ## Results
 
-*(Filled in as experiments run.)*
+114 questions, 14 documents, everything run locally on CPU (no API cost). Best configuration of each retrieval method at k = 5; full tables in [`docs/RESULTS.md`](docs/RESULTS.md), discussion in [`docs/WRITEUP.md`](docs/WRITEUP.md).
 
-| Chunking | Embedding | Retrieval | Recall@5 | MRR | Faithfulness | Latency (ms) |
+| Chunking | Embedding | Retrieval | Recall@5 | MRR | Recall@1 | Latency (ms) |
 |---|---|---|---|---|---|---|
-| | | | | | | |
+| fixed 200 words, 15% overlap | bge-small | **Hybrid** | **0.991** | **0.919** | **0.868** | 44 |
+| fixed 1000 words, no overlap | — | BM25 | 0.991 | 0.906 | 0.842 | 9 |
+| fixed 200 words, 15% overlap | bge-small | Hybrid + rerank | 0.965 | 0.901 | 0.851 | 2,298 |
+| paragraph | bge-small | Dense | 0.912 | 0.789 | 0.702 | 47 |
 
-**Key findings:** *(e.g. "Hybrid retrieval beat dense-only by X points on Recall@5; smaller chunks helped factual questions but hurt multi-sentence answers.")*
+**Chosen configuration:** 200-word chunks with 15% overlap, `bge-small` embeddings, hybrid retrieval (0.5 · dense + 0.5 · BM25), top-k = 5.
+
+**Key findings:**
+
+- **Hybrid retrieval was best.** It beat dense-only retrieval by +0.13 MRR (0.919 vs 0.789) and +8 points of Recall@5, and edged out BM25 alone (0.906). Dense and BM25 fail on different questions, so fusing them recovers both.
+- **This eval set favours keyword matching.** BM25 alone came within 0.013 MRR of the best system, and plain TF-IDF beat every neural model when used alone (dense MRR 0.852 vs 0.774 for bge-small). The questions were written from the evidence passages and reuse their words. Paraphrased, hand-written questions are the most important next step.
+- **Overlap helps small chunks.** At 200 words, 15% overlap raised hybrid MRR from 0.873 to 0.910 and BM25 MRR from 0.859 to 0.903, because facts cut at a chunk boundary are kept whole in one chunk. At 500 and 1000 words the effect was small.
+- **Small chunks suit factual questions, big chunks suit explanations.** With 200-word chunks plus overlap, factoid Recall@5 was 1.000; explanatory questions reached 1.000 only with 500- or 1000-word chunks. The bigger chunks send 2–4× more text to the answer model per query.
+- **bge-small was the best embedding model.** Dense MRR was 0.774, against 0.704 for MiniLM and 0.718 for e5-base. e5-base was 3× slower to index and query with no gain. Inside hybrid retrieval the gap shrinks to about 0.01.
+- **The reranker didn't pay off.** The ms-marco MiniLM cross-encoder lowered MRR by 0.018 and made queries about 50× slower (2.3 s vs 44 ms on CPU). It was trained on web search queries, and the first-stage ranking was already strong.
+- **Top-k:** Recall rises from 0.974 at k = 3 to 1.000 at k = 10, while MRR barely moves, so k = 5 is the balance point.
+- **Answer quality is not measured properly yet.** No Claude API key was configured, so answers are extracted sentences scored with a heuristic (token-F1 correctness about 0.34, faithfulness 1.0 by construction). Set `ANTHROPIC_API_KEY` and re-run to get real generation and LLM-judge scores.
 
 ## Roadmap
 
 - [x] Minimal demo: chunking × retrieval evaluation
-- [ ] Real document set + 100-question eval set
-- [ ] Dense embeddings + vector store
-- [ ] Hybrid retrieval + reranker
-- [ ] Answer generation + faithfulness scoring
-- [ ] MLflow tracking + results charts
-- [ ] Streamlit demo, deployed on Hugging Face Spaces
-- [ ] Write-up: what worked, what didn't, and why
+- [x] Real document set + 100-question eval set (114 questions; hand-written half still to add)
+- [x] Dense embeddings + vector store (FAISS)
+- [x] Hybrid retrieval + reranker
+- [x] Answer generation + faithfulness scoring (Claude when a key is set; offline fallback otherwise)
+- [x] Results charts (web UI) and optional MLflow tracking (`tracking: mlflow` in a config)
+- [x] TypeScript web interface (React, Tailwind CSS, shadcn/ui) + minimal Streamlit demo
+- [x] Upload your own documents (files and cloud share links)
+- [x] Write-up: what worked, what didn't, and why ([`docs/WRITEUP.md`](docs/WRITEUP.md))
+- [ ] Hand-written, paraphrased questions to reduce keyword bias
+- [ ] Re-run answer metrics with an LLM generator and judge
+- [ ] Deploy the demo (e.g. Hugging Face Spaces)

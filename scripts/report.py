@@ -35,6 +35,7 @@ def best(rows, key="mrr"):
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
     rows = json.loads((ROOT / "results" / "all_results.json").read_text(encoding="utf-8"))
     rows = [r for r in rows if r["embedder"] != "tfidf" or r["method"] == "bm25"] or rows
     n_q = rows[0]["n_questions"]

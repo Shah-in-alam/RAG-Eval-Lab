@@ -2,11 +2,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 import api.server as server
+from src.ingest import UploadStore
 
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "RESULTS_PATH", tmp_path / "all_results.json")
+    monkeypatch.setattr(server, "STORE", UploadStore(tmp_path / "uploads"))  # never touch real uploads
     return TestClient(server.app)
 
 
