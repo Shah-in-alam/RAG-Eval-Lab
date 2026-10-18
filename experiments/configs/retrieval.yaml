@@ -1,0 +1,9 @@
+# Which retrieval method works best, and does a reranker help?
+name: retrieval
+chunkers:
+  - {type: fixed, size: 200, overlap: 0.15}
+  - {type: paragraph}
+embedders: [bge-small]
+methods: [dense, bm25, hybrid, hybrid_rerank]
+ks: [3, 5, 10]
+with_answers: true

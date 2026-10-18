@@ -1,0 +1,9 @@
+# Fast smoke test: lexical embeddings only, runs in seconds.
+name: quick
+chunkers:
+  - {type: fixed, size: 200}
+  - {type: fixed, size: 500}
+embedders: [tfidf]
+methods: [dense, bm25, hybrid]
+ks: [3, 5, 10]
+with_answers: true

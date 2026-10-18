@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Caches and local state
+.cache/
+mlruns/
+.superpowers/
+results/run_log.txt
+
+# Your uploaded documents (private, never committed)
+data/uploads/
+
+# Node / web
+node_modules/
+web/dist/
+*.tsbuildinfo
+.vite/
+
+# Secrets and editor files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,15 @@
+# Which chunking strategy works best? Embedding fixed to MiniLM.
+name: chunking
+chunkers:
+  - {type: fixed, size: 200, overlap: 0}
+  - {type: fixed, size: 200, overlap: 0.15}
+  - {type: fixed, size: 500, overlap: 0}
+  - {type: fixed, size: 500, overlap: 0.15}
+  - {type: fixed, size: 1000, overlap: 0}
+  - {type: fixed, size: 1000, overlap: 0.15}
+  - {type: heading}
+  - {type: paragraph}
+embedders: [minilm]
+methods: [dense, bm25, hybrid]
+ks: [3, 5, 10]
+with_answers: true

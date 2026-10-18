@@ -1,0 +1,16 @@
+# The whole README grid (8 chunkers x 4-5 embedders x 4 methods x 3 k). Slow on CPU.
+name: full
+chunkers:
+  - {type: fixed, size: 200, overlap: 0}
+  - {type: fixed, size: 200, overlap: 0.15}
+  - {type: fixed, size: 500, overlap: 0}
+  - {type: fixed, size: 500, overlap: 0.15}
+  - {type: fixed, size: 1000, overlap: 0}
+  - {type: fixed, size: 1000, overlap: 0.15}
+  - {type: heading}
+  - {type: paragraph}
+embedders: [minilm, bge-small, e5-base, api]
+methods: [dense, bm25, hybrid, hybrid_rerank]
+ks: [3, 5, 10]
+with_answers: true
+tracking: mlflow

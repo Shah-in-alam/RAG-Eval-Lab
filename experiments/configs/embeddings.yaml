@@ -1,0 +1,9 @@
+# Which embedding model works best? Chunking fixed to 200 words with 15% overlap.
+# "api" (Voyage) runs only when VOYAGE_API_KEY is set.
+name: embeddings
+chunkers:
+  - {type: fixed, size: 200, overlap: 0.15}
+embedders: [tfidf, minilm, bge-small, e5-base, api]
+methods: [dense, hybrid]
+ks: [3, 5, 10]
+with_answers: true
